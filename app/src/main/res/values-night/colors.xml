@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="default_color">#000000</color>
+
+    <color name="bg_menu_color">#000000</color>
+    <color name="active_menu_item_color">#FFFFFF</color>
+    <color name="down_menu_color">#8A9097</color>
+
+    <color name="canvas_color">#1D1D1D</color>
+
+    <color name="add_button_color">#353535</color>
+
+    <color name="middle_line_color">#767777</color>
+    <color name="bottom_line_color">#494A4A</color>
+    <color name="text_color_default">#FFFFFF</color>
+    <color name="cat_color_on_item">#BEBEBE</color>
+    <color name="color_input_field">#D8D8D8</color>
+    <color name="radio_unchecked_color">#808080</color>
+    <color name="radio_checked_color">#FFFFFF</color>
+    <color name="text_input_field">#000000</color>
+    <color name="bg_color_message">#414141</color>
+    <color name="notify_text_color">#CDCDCD</color>
+    <color name="sb_message_color">#717171</color>
+    <color name="about_dialog_color">#4D4D4D</color>
+    <color name="about_icon_color">#FFFFFF</color>
+    <color name="subtitle_about_color">#B8B8B8</color>
+    <color name="input_category_color">#727272</color>
+    <color name="email_text_color">#FFFFFF</color>
+</resources>

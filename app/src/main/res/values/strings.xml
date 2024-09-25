@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Срок годности</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="text_send_mail"><u>Написать разработчику</u></string>
+</resources>

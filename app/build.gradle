@@ -1,0 +1,108 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.jetbrains.kotlin.android)
+}
+apply plugin: 'kotlin-kapt'
+
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+
+
+android {
+    namespace 'com.shelflife.instrument'
+    compileSdk 34
+
+    defaultConfig {
+
+        buildConfigField "String", "API_KEY", "\"${keystoreProperties['apiKey']}\""
+        buildConfigField "String", "MAIL", "\"${keystoreProperties['mail']}\""
+
+        applicationId "com.shelflife.instrument"
+        minSdk 23
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+        release {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def formattedDate = new Date().format('ddMMyy_HHmmss')
+            def newApkName = "shelflife_" + versionName + "_" + formattedDate + ".apk"
+            outputFileName = new File(newApkName)
+        }
+    }
+    viewBinding {
+        enabled = true
+    }
+}
+
+dependencies {
+
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    implementation libs.androidx.activity
+    implementation libs.androidx.constraintlayout
+    implementation libs.androidx.work.runtime.ktx
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
+
+    //dagger
+    implementation 'com.google.dagger:dagger:2.52'
+    kapt 'com.google.dagger:dagger-compiler:2.52'
+
+    //viewmodel
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.8.4'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.4'
+    implementation "androidx.fragment:fragment-ktx:1.8.2" //viewModels for Fragment
+
+    //room
+    implementation libs.androidx.room.runtime
+    kapt libs.androidx.room.compiler
+    implementation "androidx.room:room-ktx:2.6.1"
+
+    // Kotlin extensions
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.0.10"
+
+    //Gson
+    implementation 'com.google.code.gson:gson:2.11.0'
+
+    implementation "androidx.core:core-splashscreen:1.0.1"
+
+    implementation 'io.appmetrica.analytics:analytics:7.0.0'
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Рамка для Spinner -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+            <stroke
+                android:width="2dp"
+                android:color="@android:color/darker_gray" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- Иконка треугольника справа -->
+    <item android:right="8dp" android:gravity="end|center_vertical">
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/ic_arrow_down" />
+    </item>
+</layer-list>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="default_color">#5662F6</color>
+    <color name="text_color_default">#1C252F</color>
+
+    <color name="bg_menu_color">#FFFFFF</color>
+    <color name="down_menu_color">#777C82</color>
+
+    <color name="middle_line_color">#E8E9EA</color>
+
+    <color name="active_icons_color">#FFFFFF</color>
+    <color name="inactive_icons_color">#44FFFFFF</color>
+
+    <color name="radio_unchecked_color">#565656</color>
+    <color name="radio_checked_color">@color/default_color</color>
+
+
+    <color name="sb_message_color">#313131</color>
+    <color name="sb_warning_color">#FF9800</color>
+    <color name="sb_error_color">#D3302F</color>
+
+    <color name="about_dialog_color">#FFFFFF</color>
+
+    <color name="bg_color_expired">#FFDBDB</color>
+    <color name="text_color_expired">#E90000</color>
+    <color name="bg_marker_color">#D9E6FF</color>
+    <color name="marker_text_color">#1C67FF</color>
+
+    <color name="item_cat_main_fragment">#F1F1F1</color>
+
+    <color name="active_menu_item_color">@color/default_color</color>
+
+    <color name="canvas_color">#FFFFFF</color>
+
+    <color name="add_button_color">@color/default_color</color>
+    <color name="bottom_line_color">#DDDEE0</color>
+    <color name="cat_color_on_item">#495159</color>
+    <color name="color_input_field">#9E9E9E</color>
+    <color name="text_input_field">@color/text_color_default</color>
+    <color name="bg_color_message">#F0F0F2</color>
+    <color name="notify_text_color">#59595A</color>
+    <color name="about_icon_color">#495159</color>
+    <color name="subtitle_about_color">#495159</color>
+    <color name="input_category_color">#FFFFFF</color>
+    <color name="email_text_color">#5662F6</color>
+</resources>
