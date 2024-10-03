@@ -3,6 +3,7 @@ package com.shelflife.instrument.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.shelflife.instrument.model.CategoryData
 import com.shelflife.instrument.model.room.Category
 import com.shelflife.instrument.model.room.Notification
@@ -11,6 +12,15 @@ import com.shelflife.instrument.repository.RoomRepository
 import com.shelflife.instrument.ui.custom.TypeMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -78,20 +88,34 @@ class RoomViewModel @Inject constructor(private val repository: RoomRepository) 
         repository.updateProduct(oldProduct)
     }
 
-    private val products = MutableLiveData<List<Product>>()
+    private val products = MutableStateFlow<SelectedType>(SelectedType.GetProducts())
+    val getSelectedProducts: StateFlow<List<Product>> = products
+        .flatMapLatest {type->
+            flow {
+                val result = when(type){
+                    is SelectedType.SearchProducts -> repository.getSearchProducts(type.inputText)
+                    is SelectedType.GetProducts -> repository.getProducts(type.categoryId)
+                }
+                emit(result)
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Lazily, listOf())
 
-    val getSelectedProducts: LiveData<List<Product>> get() = products
+    fun getProducts(categoryId: Int?=null){
+        products.value = SelectedType.GetProducts(categoryId)
+    }
+
+    fun getSearchProducts(inputText: String){
+        products.value = SelectedType.SearchProducts(inputText)
+    }
+
+    sealed class SelectedType{
+        data class SearchProducts(val inputText: String): SelectedType()
+        data class GetProducts(val categoryId: Int?=null): SelectedType()
+    }
 
     suspend fun getSelectedProduct(productId: Int): Product{
         return repository.getSelectedProduct(productId)
-    }
-
-    suspend fun getProducts(categoryId: Int?=null){
-        products.value = repository.getProducts(categoryId)
-    }
-
-    suspend fun getSearchProducts(inputText: String){
-        products.value = repository.getSearchProducts(inputText)
     }
 
     suspend fun deleteProduct(product: Product): Int{

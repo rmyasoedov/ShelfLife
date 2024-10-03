@@ -1,5 +1,6 @@
 package com.shelflife.instrument.ui
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -15,7 +16,10 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.shelflife.instrument.BundleVar
 import com.shelflife.instrument.MyApp
 import com.shelflife.instrument.R
@@ -162,8 +166,7 @@ class MainActivity : AppCompatActivity() {
         super.onBackPressedDispatcher.onBackPressed()
     }
 
-    private var isStarted = false
-
+    @SuppressLint("RepeatOnLifecycleWrongUsage")
     override fun onResume() {
         super.onResume()
 
@@ -171,15 +174,13 @@ class MainActivity : AppCompatActivity() {
             Permission.requestPermission(android.Manifest.permission.POST_NOTIFICATIONS, this)
         }
 
-        if (isStarted){
-            return
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                sharedViewModel.snackBarMessage.collect{
+                    showSnackBar(it)
+                }
+            }
         }
-
-        sharedViewModel.snackBarMessage.observe(this){
-            showSnackBar(it)
-        }
-
-        isStarted = true
     }
 
     fun showSnackBar(message: String){

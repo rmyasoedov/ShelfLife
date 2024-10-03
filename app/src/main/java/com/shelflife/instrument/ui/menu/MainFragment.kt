@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -136,10 +137,9 @@ class MainFragment : BaseFragment() {
                 ) {
                     if(!isStartedAdapter) return
                     val selectedId = (binding.spCategory.selectedItem as Category).id
-                    CoroutineScope(Dispatchers.Main).launch {
-                        roomViewModel.getProducts(if(selectedId==-1) null else selectedId)
-                        openCategory = null
-                    }
+                    roomViewModel.getProducts(if(selectedId==-1) null else selectedId)
+                    openCategory = null
+
                 }
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
@@ -153,30 +153,31 @@ class MainFragment : BaseFragment() {
             }
         }
 
-        roomViewModel.getSelectedProducts.distinctUntilChanged().observe(viewLifecycleOwner){listProducts->
+        lifecycleScope.launch {
+            roomViewModel.getSelectedProducts.collect{listProducts->
+                arrayListProducts.clear()
+                arrayListProducts.addAll(listProducts)
 
-            arrayListProducts.clear()
-            arrayListProducts.addAll(listProducts)
 
-
-            //Если в уведомлении нажата кнопка Просмотр
-            openProductId?.let { id->
-                listProducts.find { it.id==id }?.let {
-                    Notify.cancelManager(MyApp.appContext, it.id)
-                    adapterCategory.notifyDataSetChanged()
-                    showProductDialog(it)
-                    openProductId = null
+                //Если в уведомлении нажата кнопка Просмотр
+                openProductId?.let { id->
+                    listProducts.find { it.id==id }?.let {
+                        Notify.cancelManager(MyApp.appContext, it.id)
+                        adapterCategory.notifyDataSetChanged()
+                        showProductDialog(it)
+                        openProductId = null
+                    }
                 }
+
+                adapterProduct = AdapterProduct(arrayListProducts, listCategories, object : AdapterProduct.IEvent{
+                    override fun onClick(product: Product) {
+                        showProductDialog(product)
+                    }
+                })
+
+                binding.rvProducts.layoutManager = LinearLayoutManager(requireContext())
+                binding.rvProducts.adapter = adapterProduct
             }
-
-            adapterProduct = AdapterProduct(arrayListProducts, listCategories, object : AdapterProduct.IEvent{
-                override fun onClick(product: Product) {
-                    showProductDialog(product)
-                }
-            })
-
-            binding.rvProducts.layoutManager = LinearLayoutManager(requireContext())
-            binding.rvProducts.adapter = adapterProduct
         }
 
         binding.tvAddProduct.setOnClickListener {
@@ -208,9 +209,7 @@ class MainFragment : BaseFragment() {
             modeSearch = false
             binding.clSearchPanel.gone()
             binding.clMainPanel.visible()
-            CoroutineScope(Dispatchers.Main).launch {
-                roomViewModel.getProducts(if(selectedCategory==-1) null else selectedCategory)
-            }
+            roomViewModel.getProducts(if(selectedCategory==-1) null else selectedCategory)
         }
 
         binding.etSearch.addTextChangedListener(object : TextWatcher{

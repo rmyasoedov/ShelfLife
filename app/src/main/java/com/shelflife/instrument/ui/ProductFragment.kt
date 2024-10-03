@@ -291,7 +291,6 @@ class ProductFragment : BaseFragment() {
                 }catch (e: Exception){
                     productViewModel.showSnackBarError("Ошибка при сохранении")
                 }
-
             }
 
         }
