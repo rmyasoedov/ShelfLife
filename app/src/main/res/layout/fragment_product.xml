@@ -363,7 +363,6 @@
                     android:id="@+id/cbNotifyPeriod"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:checked="true"
                     android:text="Уведомлять об окнчании за  (дней)"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"

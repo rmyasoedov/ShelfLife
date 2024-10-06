@@ -48,7 +48,9 @@ class AlarmReceiver : BroadcastReceiver() {
                         context!!,
                         productId = it.id,
                         title = it.productName,
-                        text = textMessage)
+                        text = textMessage,
+                        isRemember = true
+                    )
                     sendSummaryNotification(context)
                     roomRepository.insertNotify(Notification(
                         title = it.productName,
@@ -64,7 +66,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
             val expiredProducts = roomRepository.getExpiredProducts()
             expiredProducts.forEach {
-                val textMessage =  "Сегодня истекает срок годности товара."
+                val textMessage =  "Срок годности данного товара истек."
                 sendNotification(
                     context!!,
                     productId = it.id,
@@ -87,7 +89,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
     }
 
-    fun sendNotification(context: Context, productId: Int,  title: String, text: String) {
+    fun sendNotification(context: Context, productId: Int,  title: String, text: String, isRemember: Boolean = false) {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -99,14 +101,20 @@ class AlarmReceiver : BroadcastReceiver() {
         val notificationBuilder = NotificationCompat.Builder(context, MyConst.channelId)
             .setContentTitle(title)
             .setContentText(text)
-            .setSmallIcon(R.drawable.ic_small_icon)  // Убедитесь, что у вас есть иконка
+            .setSmallIcon(R.drawable.ic_small_icon_notify)  // Убедитесь, что у вас есть иконка
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)  // Приоритет уведомления
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setGroup(groupKey)
             .addAction(0, "Просмотр", intentViewProduct(productId))
             .addAction(0, "Удалить", actionIntent(BundleVar.DeleteProduct, productId))
-            .addAction(0, "Напомнить завтра", actionIntent(BundleVar.RemindTomorrow, productId))
+
+            if(isRemember) {
+                notificationBuilder.addAction(0, "Напомнить завтра", actionIntent(BundleVar.RemindTomorrow, productId))
+            }
+
+        notificationBuilder.setPriority(NotificationCompat.PRIORITY_HIGH)
+        notificationBuilder.setDefaults(NotificationCompat.DEFAULT_ALL)
 
         val notification = notificationBuilder.build()
 
@@ -147,7 +155,7 @@ class AlarmReceiver : BroadcastReceiver() {
         val summaryNotification = NotificationCompat.Builder(context, MyConst.channelId)
 //            .setContentTitle("У вас новые уведомления")
 //            .setContentText("Нажмите, чтобы увидеть все уведомления")
-            .setSmallIcon(R.drawable.ic_small_icon)
+            .setSmallIcon(R.drawable.ic_small_icon_notify)
 //            .setStyle(NotificationCompat.InboxStyle() // Стиль для суммарного уведомления
 //                .setSummaryText("У вас несколько уведомлений")
 //            )
@@ -164,7 +172,7 @@ class AlarmReceiver : BroadcastReceiver() {
         // Проверка для Android 8.0 и выше
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = MyConst.CHANNEL_NAME
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(MyConst.channelId, name, importance)
             //channel.description = "Channel Description"
             // Регистрируем канал в системе

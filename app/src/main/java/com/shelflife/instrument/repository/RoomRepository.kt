@@ -41,7 +41,7 @@ class RoomRepository @Inject constructor(private val dataBase: Dao) {
         return dataBase.updateProduct(product)
     }
 
-    suspend fun getSelectedProduct(productId: Int): Product{
+    suspend fun getSelectedProduct(productId: Int): Product?{
         return dataBase.getSelectedProduct(productId)
     }
 
@@ -56,18 +56,19 @@ class RoomRepository @Inject constructor(private val dataBase: Dao) {
     suspend fun remindTomorrow(productId: Int){
         try {
             //Достаем продукт из БД
-            val product = dataBase.getSelectedProduct(productId)
-            //Считаем сколько дней доконца хранения
-            val untilDays = MyDateFormatter.calculateDaysUntil(product.dateEnd)
+            dataBase.getSelectedProduct(productId)?.let { product ->
+                //Считаем сколько дней доконца хранения
+                val untilDays = MyDateFormatter.calculateDaysUntil(product.dateEnd)
 
-            //Если остается больше одного дня, то ставив напоинание на день меньше
-            if(untilDays>1){
-                product.notificationPeriod = "${untilDays - 1}"
-            }else{ //если осталось 1 и менее дней, то активируем напоминание об окончании срора
-                product.notificationPeriod = ""
-                product.notificationExpired = true
+                //Если остается больше одного дня, то ставив напоинание на день меньше
+                if(untilDays>1){
+                    product.notificationPeriod = "${untilDays - 1}"
+                }else{ //если осталось 1 и менее дней, то активируем напоминание об окончании срора
+                    product.notificationPeriod = ""
+                    product.notificationExpired = true
+                }
+                dataBase.updateProduct(product)
             }
-            dataBase.updateProduct(product)
         }catch (e: Exception){
             e.printStackTrace()
         }

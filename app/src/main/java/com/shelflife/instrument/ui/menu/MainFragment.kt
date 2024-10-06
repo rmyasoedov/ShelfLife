@@ -38,6 +38,7 @@ import com.shelflife.instrument.util.UserScreenManager
 import com.shelflife.instrument.viewmodel.RoomViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -153,33 +154,6 @@ class MainFragment : BaseFragment() {
             }
         }
 
-        lifecycleScope.launch {
-            roomViewModel.getSelectedProducts.collect{listProducts->
-                arrayListProducts.clear()
-                arrayListProducts.addAll(listProducts)
-
-
-                //Если в уведомлении нажата кнопка Просмотр
-                openProductId?.let { id->
-                    listProducts.find { it.id==id }?.let {
-                        Notify.cancelManager(MyApp.appContext, it.id)
-                        adapterCategory.notifyDataSetChanged()
-                        showProductDialog(it)
-                        openProductId = null
-                    }
-                }
-
-                adapterProduct = AdapterProduct(arrayListProducts, listCategories, object : AdapterProduct.IEvent{
-                    override fun onClick(product: Product) {
-                        showProductDialog(product)
-                    }
-                })
-
-                binding.rvProducts.layoutManager = LinearLayoutManager(requireContext())
-                binding.rvProducts.adapter = adapterProduct
-            }
-        }
-
         binding.tvAddProduct.setOnClickListener {
             AnimateView(it).animateAlpha()
             userScreenManager.openProductFragment(requireActivity() as AppCompatActivity)
@@ -228,8 +202,41 @@ class MainFragment : BaseFragment() {
         })
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        lifecycleScope.launch {
+            roomViewModel.getSelectedProducts.collect{listProducts->
+                arrayListProducts.clear()
+                arrayListProducts.addAll(listProducts)
+
+
+                //Если в уведомлении нажата кнопка Просмотр
+                openProductId?.let { id->
+                    listProducts.find { it.id==id }?.let {
+                        Notify.cancelManager(MyApp.appContext, it.id)
+                        adapterCategory.notifyDataSetChanged()
+                        showProductDialog(it)
+                        openProductId = null
+                    }
+                }
+
+                adapterProduct = AdapterProduct(arrayListProducts, listCategories, object : AdapterProduct.IEvent{
+                    override fun onClick(product: Product) {
+                        showProductDialog(product)
+                    }
+                })
+
+                binding.rvProducts.layoutManager = LinearLayoutManager(requireContext())
+                binding.rvProducts.adapter = adapterProduct
+            }
+        }
+
+
+    }
+
     private fun showProductDialog(product: Product){
-        AboutProductDialog(product, object : AboutProductDialog.IEvent{
+        val dialog = AboutProductDialog(product, object : AboutProductDialog.IEvent{
             override fun onClose() {
 
             }
@@ -258,7 +265,16 @@ class MainFragment : BaseFragment() {
             override fun onEdit() {
                 userScreenManager.openProductFragment(requireActivity() as MainActivity, product.id)
             }
-        }).show(requireActivity().supportFragmentManager,"AboutProductDialog")
+        })
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if(roomViewModel.getSelectedProduct(product.id)==null){
+                removeProductFromList(product.id)
+                showSnackBar(binding.root, TypeMessage.ERROR, "Товар в базе не найден")
+            }else{
+                dialog.show(requireActivity().supportFragmentManager,"AboutProductDialog")
+            }
+        }
     }
 
     fun removeProductFromList(productId: Int){

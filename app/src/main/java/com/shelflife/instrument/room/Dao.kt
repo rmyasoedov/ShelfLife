@@ -56,7 +56,7 @@ interface Dao {
     suspend fun getAllProducts(): List<Product>
 
     @Query("SELECT *FROM product WHERE id=:productId")
-    suspend fun getSelectedProduct(productId: Int): Product
+    suspend fun getSelectedProduct(productId: Int): Product?
 
     @Query("SELECT *FROM product WHERE category_id=:categoryId ORDER BY date_end ASC")
     suspend fun getProducts(categoryId: Int): List<Product>
