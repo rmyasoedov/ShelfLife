@@ -13,11 +13,14 @@ import com.shelflife.instrument.ui.custom.TypeMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
@@ -49,9 +52,6 @@ class RoomViewModel @Inject constructor(private val repository: RoomRepository) 
             }
         }
     }
-
-    //private var categories = MutableLiveData<List<Category>>()
-    //val getAllCategories: LiveData<List<Category>> get() = categories
 
     fun getAllCategories(): LiveData<List<Category>> {
         return repository.getAllCategories()
@@ -88,8 +88,9 @@ class RoomViewModel @Inject constructor(private val repository: RoomRepository) 
         repository.updateProduct(oldProduct)
     }
 
-    private val products = MutableStateFlow<SelectedType>(SelectedType.GetProducts())
+    private val products = MutableStateFlow<SelectedType?>(null)
     val getSelectedProducts: StateFlow<List<Product>> = products
+        .filterNotNull()
         .flatMapLatest {type->
             flow {
                 val result = when(type){
@@ -103,10 +104,12 @@ class RoomViewModel @Inject constructor(private val repository: RoomRepository) 
 
     fun getProducts(categoryId: Int?=null){
         products.value = SelectedType.GetProducts(categoryId)
+        products.value = null
     }
 
     fun getSearchProducts(inputText: String){
         products.value = SelectedType.SearchProducts(inputText)
+        products.value = null
     }
 
     sealed class SelectedType{
@@ -114,7 +117,7 @@ class RoomViewModel @Inject constructor(private val repository: RoomRepository) 
         data class GetProducts(val categoryId: Int?=null): SelectedType()
     }
 
-    suspend fun getSelectedProduct(productId: Int): Product{
+    suspend fun getSelectedProduct(productId: Int): Product?{
         return repository.getSelectedProduct(productId)
     }
 

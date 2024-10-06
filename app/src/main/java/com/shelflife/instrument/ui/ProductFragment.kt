@@ -117,6 +117,12 @@ class ProductFragment : BaseFragment() {
             binding.tvTitle.text = "Редактирование"
             CoroutineScope(Dispatchers.Main).launch {
                 val product = roomViewModel.getSelectedProduct(id)
+
+                if(product==null){
+                    sharedViewModel.showSnackBar("Товар в базе не найден")
+                    userScreenManager.openMainFragment(requireActivity() as MainActivity)
+                    return@launch
+                }
                 binding.etProduct.setText(product.productName)
 
                 if(product.dateStart.isNotEmpty()){

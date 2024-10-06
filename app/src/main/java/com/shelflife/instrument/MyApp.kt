@@ -27,6 +27,10 @@ class MyApp : Application() {
         private lateinit var appComponent: AppComponent
         fun getComponent(): AppComponent = appComponent
         lateinit var appContext: Context
+
+        fun updateDailyCheck() {
+            (appContext as MyApp).scheduleDailyCheck()
+        }
     }
 
     override fun onCreate() {
@@ -44,17 +48,17 @@ class MyApp : Application() {
             .build()
         appComponent.inject(this)
 
-        scheduleDailyCheck(this)
+        scheduleDailyCheck()
     }
 
     @SuppressLint("ScheduleExactAlarm")
-    fun scheduleDailyCheck(context: Context) {
-        cancelScheduledCheck(context)
+    fun scheduleDailyCheck() {
+        cancelScheduledCheck(this)
 
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, AlarmReceiver::class.java)
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, AlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
-            context,
+            this,
             0,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE

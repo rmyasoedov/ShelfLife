@@ -11,8 +11,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import com.shelflife.instrument.BuildConfig
+import com.shelflife.instrument.MyApp
 import com.shelflife.instrument.R
 import com.shelflife.instrument.databinding.FragmentOptionBinding
 import com.shelflife.instrument.factory.OptionsViewModelFactory
@@ -75,10 +77,8 @@ class OptionFragment : BaseFragment() {
             )
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            !Permission.checkRequestPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS)) {
-            binding.tvSetNotification.visible()
-        }
+        binding.tvSetNotification.isVisible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            !Permission.checkRequestPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS)
 
         setDefaultData()
     }
@@ -137,6 +137,7 @@ class OptionFragment : BaseFragment() {
             options.timeNotification = binding.tvTime.text.toString()
 
             sharedPreference.saveOptions(options)
+            MyApp.updateDailyCheck()
             userScreenManager.openMainFragment(requireActivity() as MainActivity)
         }
 
