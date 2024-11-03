@@ -25,6 +25,7 @@ import com.shelflife.instrument.MyApp
 import com.shelflife.instrument.R
 import com.shelflife.instrument.databinding.ActivityMainBinding
 import com.shelflife.instrument.factory.SharedViewModelFactory
+import com.shelflife.instrument.test.UserRepository
 import com.shelflife.instrument.ui.custom.CustomSnackBar
 import com.shelflife.instrument.ui.custom.TypeMessage
 import com.shelflife.instrument.ui.menu.CategoryFragment
@@ -52,6 +53,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var userScreenManager: UserScreenManager
 
+    @Inject
+    lateinit var userRepository: UserRepository
+
     private val menuItems: List<LinearLayout> by lazy {
         listOf(
             binding.llMain,
@@ -62,6 +66,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var activeItemView: LinearLayout?=null
+
+    override fun onStart() {
+        super.onStart()
+        val user = userRepository.getUser()
+        println(user)
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         MyApp.getComponent().inject(this)

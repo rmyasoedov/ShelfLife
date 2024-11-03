@@ -2,7 +2,6 @@ package com.shelflife.instrument.api
 
 import android.util.Log
 import com.shelflife.instrument.BuildConfig
-import io.appmetrica.analytics.impl.T
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async

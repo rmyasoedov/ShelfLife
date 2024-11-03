@@ -2,6 +2,7 @@ package com.shelflife.instrument.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.JsonElement
 import com.shelflife.instrument.model.BaseProduct
 import com.shelflife.instrument.repository.BarcodeNetRepository
 import kotlinx.coroutines.CoroutineScope
@@ -33,12 +34,20 @@ class BarcodeScanViewModel @Inject constructor(private val barcodeNetRepository:
             flow {
                 emit(RequestType.LoadStart)
                 try {
-                    val result = barcodeNetRepository.loadBarcodeData(barcode)
-                    if(result.error || result.body==null || result.body?.name==null){
-                        throw Exception()
-                    }
-                    result.body?.name?.let { productName->
-                        emit(RequestType.onResult(productName))
+                    val resultGreen = barcodeNetRepository.loadGreenBarcodeData(barcode)
+
+                    val productGreen = getGreenData(resultGreen.body)
+
+                    if(productGreen!=null){
+                        emit(RequestType.onResult(productGreen))
+                    }else{
+                        val result = barcodeNetRepository.loadBarcodeData(barcode)
+                        if(result.error || result.body==null || result.body?.name==null){
+                            throw Exception()
+                        }
+                        result.body?.name?.let { productName->
+                            emit(RequestType.onResult(productName))
+                        }
                     }
                 }catch (e: Exception){
 
@@ -48,6 +57,21 @@ class BarcodeScanViewModel @Inject constructor(private val barcodeNetRepository:
             }
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, RequestType.LoadStart)
+
+    fun getGreenData(json: JsonElement?): String?{
+        if(json==null) return null
+        try {
+            json.asJsonObject?.get("items")?.asJsonArray?.let { items->
+                if(items.size()>0){
+                    val productName = items.get(0).asJsonObject.get("title").asString
+                    return if(productName.isNullOrEmpty()) null else productName
+                }else{
+                    return null
+                }
+            }
+        }catch (_:Exception){}
+        return null
+    }
 
     fun loadBarcodeData(barcode: String){
         loaderBarcode.value = barcode

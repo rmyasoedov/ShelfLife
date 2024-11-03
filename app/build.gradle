@@ -24,6 +24,7 @@ android {
         buildConfigField "String", "MAIL", "\"${keystoreProperties['mail']}\""
 
         buildConfigField "String", "SOURCE1", "\"${sourceProperties['source1']}\""
+        buildConfigField "String", "SOURCE2", "\"${sourceProperties['source2']}\""
 
         applicationId "com.shelflife.instrument"
         minSdk 23

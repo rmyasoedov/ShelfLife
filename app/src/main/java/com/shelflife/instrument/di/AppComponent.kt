@@ -6,6 +6,7 @@ import com.shelflife.instrument.ui.MainActivity
 import com.shelflife.instrument.di.module.AppModule
 import com.shelflife.instrument.di.module.DataBaseModule
 import com.shelflife.instrument.di.module.NetworkModule
+import com.shelflife.instrument.di.module.RepositoryModule
 import com.shelflife.instrument.notify.AlarmReceiver
 import com.shelflife.instrument.notify.OperationReceiver
 import com.shelflife.instrument.ui.ProductFragment
@@ -23,7 +24,8 @@ import javax.inject.Singleton
 @Component(modules = [
     AppModule::class,
     DataBaseModule::class,
-    NetworkModule::class
+    NetworkModule::class,
+    RepositoryModule::class
 ])
 interface  AppComponent {
     fun inject(mainActivity: MainActivity)
