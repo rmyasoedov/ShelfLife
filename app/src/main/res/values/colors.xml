@@ -46,4 +46,6 @@
     <color name="subtitle_about_color">#495159</color>
     <color name="input_category_color">#FFFFFF</color>
     <color name="email_text_color">#5662F6</color>
+
+    <color name="border_found_scan">#FF00FF00</color>
 </resources>

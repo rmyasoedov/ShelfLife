@@ -1,14 +1,13 @@
 package com.shelflife.instrument.di.module
 
 import com.shelflife.instrument.BuildConfig
-import com.shelflife.instrument.MyConst
+import com.shelflife.instrument.api.HttpClient
 import com.shelflife.instrument.api.NetClientApi
 import com.shelflife.instrument.api.NetGreenApi
 import dagger.Module
 import dagger.Provides
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import javax.inject.Named
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -17,19 +16,20 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideApi1(@GreenRetrofit retrofit: Retrofit): NetGreenApi =
+    fun provideGreenApi(@GreenRetrofit retrofit: Retrofit): NetGreenApi =
         retrofit.create(NetGreenApi::class.java)
 
     @Provides
     @Singleton
-    fun provideApi2(@BaseRetrofit retrofit: Retrofit): NetClientApi =
+    fun provideBaseApi(@BaseRetrofit retrofit: Retrofit): NetClientApi =
         retrofit.create(NetClientApi::class.java)
 
     @Provides
     @Singleton
     @GreenRetrofit
-    fun provideRetrofit1(): Retrofit =
+    fun provideGreenRetrofit(): Retrofit =
         Retrofit.Builder()
+
             .baseUrl(BuildConfig.SOURCE1)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -37,7 +37,7 @@ class NetworkModule {
     @Provides
     @Singleton
     @BaseRetrofit
-    fun provideRetrofit2(): Retrofit =
+    fun provideBaseRetrofit(): Retrofit =
         Retrofit.Builder()
             .baseUrl(BuildConfig.SOURCE2)
             .addConverterFactory(GsonConverterFactory.create())

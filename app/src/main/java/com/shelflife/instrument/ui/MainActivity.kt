@@ -1,23 +1,15 @@
 package com.shelflife.instrument.ui
 
 import android.annotation.SuppressLint
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.shelflife.instrument.BundleVar
@@ -25,7 +17,6 @@ import com.shelflife.instrument.MyApp
 import com.shelflife.instrument.R
 import com.shelflife.instrument.databinding.ActivityMainBinding
 import com.shelflife.instrument.factory.SharedViewModelFactory
-import com.shelflife.instrument.test.UserRepository
 import com.shelflife.instrument.ui.custom.CustomSnackBar
 import com.shelflife.instrument.ui.custom.TypeMessage
 import com.shelflife.instrument.ui.menu.CategoryFragment
@@ -35,10 +26,7 @@ import com.shelflife.instrument.ui.menu.OptionFragment
 import com.shelflife.instrument.util.AnimateView
 import com.shelflife.instrument.util.Permission
 import com.shelflife.instrument.util.UserScreenManager
-import com.shelflife.instrument.viewmodel.RoomViewModel
 import com.shelflife.instrument.viewmodel.SharedViewModel
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -53,9 +41,6 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var userScreenManager: UserScreenManager
 
-    @Inject
-    lateinit var userRepository: UserRepository
-
     private val menuItems: List<LinearLayout> by lazy {
         listOf(
             binding.llMain,
@@ -66,13 +51,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var activeItemView: LinearLayout?=null
-
-    override fun onStart() {
-        super.onStart()
-        val user = userRepository.getUser()
-        println(user)
-
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         MyApp.getComponent().inject(this)

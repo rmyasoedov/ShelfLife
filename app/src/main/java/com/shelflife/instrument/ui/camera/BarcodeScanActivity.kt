@@ -4,23 +4,34 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Bundle
 import android.util.Size
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
+import androidx.camera.core.UseCaseGroup
+import androidx.camera.core.ViewPort
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.camera.viewfinder.surface.TransformationInfo
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toRectF
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -28,6 +39,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.gson.Gson
 import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
@@ -38,6 +50,7 @@ import com.shelflife.instrument.databinding.ActivityBarcodeScanBinding
 import com.shelflife.instrument.factory.BarcodeScanFactory
 import com.shelflife.instrument.factory.SharedViewModelFactory
 import com.shelflife.instrument.ui.custom.BarcodeFocusView
+import com.shelflife.instrument.ui.custom.RectangleOverlayView
 import com.shelflife.instrument.ui.dialogs.ConfirmDialog
 import com.shelflife.instrument.util.AnimateView
 import com.shelflife.instrument.util.Permission
@@ -73,6 +86,10 @@ class BarcodeScanActivity : AppCompatActivity() {
     private var isAnalyzerActive = false
     private var barcodeAnalyzer: BarcodeAnalyzer? = null
 
+    private val overlayView: RectangleOverlayView by lazy {
+        RectangleOverlayView(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         MyApp.getComponent().inject(this)
         super.onCreate(savedInstanceState)
@@ -97,11 +114,24 @@ class BarcodeScanActivity : AppCompatActivity() {
         setHoleView(this, binding.barcodeFocusView)
 
         lifecycleScope.launch {
+            delay(300)
+
+            if(binding.root.height.toFloat()/binding.root.width.toFloat() < 1.75F){
+                val params = binding.previewView.layoutParams as ViewGroup.LayoutParams
+                params.width = ViewGroup.LayoutParams.MATCH_PARENT
+                params.height = 0
+                binding.previewView.layoutParams = params
+            }
+
+            (binding.previewView as ViewGroup).addView(overlayView)
+        }
+
+        lifecycleScope.launch {
             barcodeScanViewModel.getBarcodeResult.collect{requestType->
                 when(requestType){
                     RequestType.LoadStart -> {}
                     RequestType.LoadStop -> {
-
+                        overlayView.updateRectangle(null)
                     }
                     is RequestType.onError -> {
                         onErrorResult(requestType.message)
@@ -145,24 +175,54 @@ class BarcodeScanActivity : AppCompatActivity() {
     private lateinit var cameraSelector: CameraSelector
     private lateinit var preview: Preview
 
+    @SuppressLint("RestrictedApi")
     private fun startCamera(){
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-        cameraProviderFuture.addListener(Runnable {
+        cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
 
-            preview = Preview.Builder()
+            val resolutionSelector = ResolutionSelector.Builder()
+                .setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY)
                 .build()
-                .also {
-                    it.setSurfaceProvider(binding.previewView.surfaceProvider)
+
+            preview = Preview.Builder()
+                .setResolutionSelector(resolutionSelector)
+                .build()
+                .apply {
+                    setSurfaceProvider(binding.previewView.surfaceProvider)
                 }
 
             imageAnalyzer = ImageAnalysis.Builder()
+                .setResolutionSelector(resolutionSelector)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
 
-            barcodeAnalyzer = BarcodeAnalyzer {result, type ->
+
+            barcodeAnalyzer = BarcodeAnalyzer {result, type, rect, size ->
+
                 runOnUiThread {
+                    if(!type){
+                        overlayView.updateRectangle(null)
+                        return@runOnUiThread
+                    }
+
+                    size?.let {
+
+                        val scaleX = overlayView.height.toFloat() / it.width
+                        val scaleY = overlayView.width.toFloat() / it.height
+
+                        //строим координаты рамки
+                        val transformedRect = RectF(
+                            (rect?.left ?: 0f) * scaleX,
+                            (rect?.top ?: 0f) * scaleY,
+                            (rect?.right ?: 0f) * scaleX,
+                            (rect?.bottom ?: 0f) * scaleY
+                        )
+
+                        overlayView.updateRectangle(transformedRect)
+                    }
+
                     barcodeScanViewModel.loadBarcodeData(result)
                     stopImageAnalysis()
                 }
@@ -221,6 +281,7 @@ class BarcodeScanActivity : AppCompatActivity() {
     private fun setModeFullScreen(){
         try {
             window.statusBarColor = Color.TRANSPARENT
+            window.navigationBarColor = Color.TRANSPARENT
             WindowCompat.setDecorFitsSystemWindows(window, false)
         }catch (_:Exception){}
     }
@@ -230,15 +291,20 @@ class BarcodeScanActivity : AppCompatActivity() {
         val heightScreen = ScreenUtils.getHeightFullscreen(this@BarcodeScanActivity)
         val widthScreen = ScreenUtils.getWidthScreen(this@BarcodeScanActivity)
         val left = indent
-        val top = heightScreen / 2  - heightScreen / 6
         val right = widthScreen - indent
-        val bottom = heightScreen / 2 + heightScreen / 6
+
+        val width = right - left
+        val height = (width.toFloat() / (4f/3f)).toInt()
+
+
+        val top = heightScreen / 2  - height / 2
+        val bottom = heightScreen / 2 + height / 2
 
         holeView.setHolePosition(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
     }
 }
 
-class BarcodeAnalyzer(private val onBarcodeDetected: (String, Boolean) -> Unit) : ImageAnalysis.Analyzer {
+class BarcodeAnalyzer(private val onBarcodeDetected: (String, Boolean, RectF?, Size?) -> Unit) : ImageAnalysis.Analyzer {
 
     private val barcodeScanner = BarcodeScanning.getClient()
 
@@ -264,9 +330,19 @@ class BarcodeAnalyzer(private val onBarcodeDetected: (String, Boolean) -> Unit) 
                 .addOnSuccessListener { barcodes ->
                     // Обработка распознанных штрихкодов
                     if(!stopScan){
+                        if(barcodes.isEmpty()){
+                            onBarcodeDetected("",false, null,null)
+                        }
+
                         for (barcode in barcodes) {
                             val rawValue = barcode.rawValue
-                            onBarcodeDetected(rawValue, true)
+                            onBarcodeDetected(
+                                rawValue,
+                                true,
+                                barcode.boundingBox.toRectF(), //координаты найденного ш/к
+                                Size(imageProxy.width,
+                                    imageProxy.height)
+                            )
                             break
                         }
                     }
@@ -276,10 +352,8 @@ class BarcodeAnalyzer(private val onBarcodeDetected: (String, Boolean) -> Unit) 
                     println("Ошибка распознавания:")
                 }
                 .addOnCompleteListener {
-                    // Обязательно закройте ImageProxy, чтобы избежать утечек памяти
                     imageProxy.close()
                 }
         }
     }
-
 }

@@ -35,7 +35,6 @@ class BarcodeScanViewModel @Inject constructor(private val barcodeNetRepository:
                 emit(RequestType.LoadStart)
                 try {
                     val resultGreen = barcodeNetRepository.loadGreenBarcodeData(barcode)
-
                     val productGreen = getGreenData(resultGreen.body)
 
                     if(productGreen!=null){
@@ -50,7 +49,6 @@ class BarcodeScanViewModel @Inject constructor(private val barcodeNetRepository:
                         }
                     }
                 }catch (e: Exception){
-
                     emit(RequestType.onError("Не удалось получить данные"))
                 }
                 emit(RequestType.LoadStop)

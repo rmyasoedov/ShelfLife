@@ -9,34 +9,40 @@
 
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="9:16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/constraintLayout" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <com.shelflife.instrument.ui.custom.BarcodeFocusView
             android:id="@+id/barcodeFocusView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
 
         <TextView
             android:id="@+id/tvCancel"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="Отмена"
-            android:fontFamily="@font/noto_sans_medium"
-            android:textSize="18sp"
-            android:gravity="center"
-            android:background="@drawable/bg_button_cancel"
-            android:textColor="@color/white"
             android:layout_marginStart="25dp"
             android:layout_marginEnd="25dp"
-            android:layout_marginBottom="36dp"
+            android:layout_marginBottom="42dp"
+            android:background="@drawable/bg_button_cancel"
+            android:fontFamily="@font/noto_sans_medium"
+            android:gravity="center"
+            android:text="Отмена"
+            android:textColor="@color/white"
+            android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
