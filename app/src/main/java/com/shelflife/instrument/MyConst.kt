@@ -28,3 +28,9 @@ object BundleVar{
     const val ProductName = "productName"
 
 }
+
+enum class Services{
+    GOOGLE,
+    HUAWEI,
+    NONE
+}

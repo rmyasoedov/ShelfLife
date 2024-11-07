@@ -6,6 +6,9 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import com.huawei.hms.api.HuaweiApiAvailability
 import com.shelflife.instrument.di.AppComponent
 import com.shelflife.instrument.di.DaggerAppComponent
 import com.shelflife.instrument.di.module.AppModule
@@ -47,6 +50,9 @@ class MyApp : Application() {
             .appModule(AppModule(this))
             .build()
         appComponent.inject(this)
+
+        //println("Google: ${isGooglePlayServicesAvailable(this)}")
+        //println("Huawei: ${isHuaweiMobileServicesAvailable(this)}")
 
         scheduleDailyCheck()
     }

@@ -4,51 +4,27 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Rect
 import android.graphics.RectF
 import android.os.Bundle
-import android.util.Size
-import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
-import androidx.camera.core.UseCaseGroup
-import androidx.camera.core.ViewPort
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.camera.viewfinder.surface.TransformationInfo
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.toRectF
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import com.google.gson.Gson
-import com.google.mlkit.vision.barcode.Barcode
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.common.InputImage
 import com.shelflife.instrument.BundleVar
 import com.shelflife.instrument.MyApp
 import com.shelflife.instrument.R
 import com.shelflife.instrument.databinding.ActivityBarcodeScanBinding
 import com.shelflife.instrument.factory.BarcodeScanFactory
-import com.shelflife.instrument.factory.SharedViewModelFactory
 import com.shelflife.instrument.ui.custom.BarcodeFocusView
 import com.shelflife.instrument.ui.custom.RectangleOverlayView
 import com.shelflife.instrument.ui.dialogs.ConfirmDialog
@@ -58,10 +34,7 @@ import com.shelflife.instrument.util.ScreenUtils
 import com.shelflife.instrument.viewmodel.BarcodeScanViewModel
 import com.shelflife.instrument.viewmodel.RequestType
 import com.shelflife.instrument.viewmodel.SharedViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -301,59 +274,5 @@ class BarcodeScanActivity : AppCompatActivity() {
         val bottom = heightScreen / 2 + height / 2
 
         holeView.setHolePosition(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
-    }
-}
-
-class BarcodeAnalyzer(private val onBarcodeDetected: (String, Boolean, RectF?, Size?) -> Unit) : ImageAnalysis.Analyzer {
-
-    private val barcodeScanner = BarcodeScanning.getClient()
-
-    private var stopScan = false
-
-    fun stopAnalyzer(){
-        stopScan = true
-    }
-
-    fun resumeAnalyzer(){
-        stopScan = false
-    }
-
-    @OptIn(ExperimentalGetImage::class)
-    override fun analyze(imageProxy: ImageProxy) {
-
-        val mediaImage = imageProxy.image
-
-        if (mediaImage != null) {
-            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-            // Распознавание штрихкодов
-            barcodeScanner.process(image)
-                .addOnSuccessListener { barcodes ->
-                    // Обработка распознанных штрихкодов
-                    if(!stopScan){
-                        if(barcodes.isEmpty()){
-                            onBarcodeDetected("",false, null,null)
-                        }
-
-                        for (barcode in barcodes) {
-                            val rawValue = barcode.rawValue
-                            onBarcodeDetected(
-                                rawValue,
-                                true,
-                                barcode.boundingBox.toRectF(), //координаты найденного ш/к
-                                Size(imageProxy.width,
-                                    imageProxy.height)
-                            )
-                            break
-                        }
-                    }
-                }
-                .addOnFailureListener {
-                    // Обработка ошибок
-                    println("Ошибка распознавания:")
-                }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
-        }
     }
 }
