@@ -157,7 +157,7 @@
                 android:id="@+id/tvSetNotification"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/button_height"
-                android:visibility="visible"
+                android:visibility="gone"
                 android:text="Включить уведомления"
                 style="@style/ModButtonStyle"/>
 

@@ -1,6 +1,8 @@
 package com.shelflife.instrument.ui
 
+import android.app.Activity
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,13 +11,17 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.shelflife.instrument.BundleVar
 import com.shelflife.instrument.MyApp
+import com.shelflife.instrument.MyConst
 import com.shelflife.instrument.R
 import com.shelflife.instrument.databinding.FragmentMainBinding
 import com.shelflife.instrument.databinding.FragmentProductBinding
@@ -25,6 +31,7 @@ import com.shelflife.instrument.factory.SharedViewModelFactory
 import com.shelflife.instrument.model.room.Category
 import com.shelflife.instrument.model.room.Product
 import com.shelflife.instrument.ui.adapter.AdapterCategorySpinner
+import com.shelflife.instrument.ui.camera.BarcodeScanActivity
 import com.shelflife.instrument.ui.custom.CustomSnackBar
 import com.shelflife.instrument.ui.custom.TypeMessage
 import com.shelflife.instrument.ui.custom.maskedEditText.MaskedEditText
@@ -38,6 +45,7 @@ import com.shelflife.instrument.viewmodel.RoomViewModel
 import com.shelflife.instrument.viewmodel.SharedViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
@@ -101,7 +109,7 @@ class ProductFragment : BaseFragment() {
             )
         }
 
-        //roomViewModel.getCategories()
+        binding.ivScan.isVisible = MyConst.USE_BARCODE_FINDER
 
         if(productId==null){
             productViewModel.getDefaultOptions()
@@ -149,6 +157,14 @@ class ProductFragment : BaseFragment() {
                 }
                 binding.cbNotifyExpired.isChecked = product.notificationExpired
                 updatedProduct = product
+            }
+        }
+    }
+
+    private val getResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.getStringExtra(BundleVar.ProductName)?.let { productName->
+                binding.etProduct.setText(productName)
             }
         }
     }
@@ -344,6 +360,12 @@ class ProductFragment : BaseFragment() {
 
         binding.ivCalendarEnd.setOnClickListener {
             showDatePicker(binding.maskEnd)
+        }
+
+        binding.ivScan.setOnClickListener {
+            AnimateView(it).animateAlpha()
+            val intent = Intent(requireContext(), BarcodeScanActivity::class.java)
+            getResult.launch(intent)
         }
     }
 

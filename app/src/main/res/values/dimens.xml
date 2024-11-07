@@ -3,4 +3,6 @@
     <dimen name="height_header_block">64dp</dimen>
     <dimen name="default_indent">16dp</dimen>
     <dimen name="button_height">44dp</dimen>
+
+    <dimen name="indent_camera_hole">30dp</dimen>
 </resources>

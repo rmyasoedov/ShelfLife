@@ -1,23 +1,15 @@
 package com.shelflife.instrument.ui
 
 import android.annotation.SuppressLint
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.shelflife.instrument.BundleVar
@@ -34,10 +26,7 @@ import com.shelflife.instrument.ui.menu.OptionFragment
 import com.shelflife.instrument.util.AnimateView
 import com.shelflife.instrument.util.Permission
 import com.shelflife.instrument.util.UserScreenManager
-import com.shelflife.instrument.viewmodel.RoomViewModel
 import com.shelflife.instrument.viewmodel.SharedViewModel
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

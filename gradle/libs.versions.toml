@@ -11,6 +11,8 @@ activity = "1.9.1"
 constraintlayout = "2.1.4"
 roomRuntime = "2.6.1"
 workRuntimeKtx = "2.9.1"
+viewfinderCore = "1.4.0-alpha10"
+cameraViewfinderCore = "1.4.0-alpha07"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -24,6 +26,8 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
+androidx-viewfinder-core = { group = "androidx.camera.viewfinder", name = "viewfinder-core", version.ref = "viewfinderCore" }
+androidx-camera-viewfinder-core = { group = "androidx.camera", name = "camera-viewfinder-core", version.ref = "cameraViewfinderCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
